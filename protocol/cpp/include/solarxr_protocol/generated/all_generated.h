@@ -351,6 +351,9 @@ struct AddUnknownDeviceRequestBuilder;
 struct ForgetDeviceRequest;
 struct ForgetDeviceRequestBuilder;
 
+struct SerialTrackerCommandRequest;
+struct SerialTrackerCommandRequestBuilder;
+
 }  // namespace rpc
 
 namespace pub_sub {
@@ -926,11 +929,12 @@ enum class RpcMessage : uint8_t {
   UnknownDeviceHandshakeNotification = 55,
   AddUnknownDeviceRequest = 56,
   ForgetDeviceRequest = 57,
+  SerialTrackerCommandRequest = 58,
   MIN = NONE,
-  MAX = ForgetDeviceRequest
+  MAX = SerialTrackerCommandRequest
 };
 
-inline const RpcMessage (&EnumValuesRpcMessage())[58] {
+inline const RpcMessage (&EnumValuesRpcMessage())[59] {
   static const RpcMessage values[] = {
     RpcMessage::NONE,
     RpcMessage::HeartbeatRequest,
@@ -989,13 +993,14 @@ inline const RpcMessage (&EnumValuesRpcMessage())[58] {
     RpcMessage::SerialTrackerGetWifiScanRequest,
     RpcMessage::UnknownDeviceHandshakeNotification,
     RpcMessage::AddUnknownDeviceRequest,
-    RpcMessage::ForgetDeviceRequest
+    RpcMessage::ForgetDeviceRequest,
+    RpcMessage::SerialTrackerCommandRequest
   };
   return values;
 }
 
 inline const char * const *EnumNamesRpcMessage() {
-  static const char * const names[59] = {
+  static const char * const names[60] = {
     "NONE",
     "HeartbeatRequest",
     "HeartbeatResponse",
@@ -1054,13 +1059,14 @@ inline const char * const *EnumNamesRpcMessage() {
     "UnknownDeviceHandshakeNotification",
     "AddUnknownDeviceRequest",
     "ForgetDeviceRequest",
+    "SerialTrackerCommandRequest",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNameRpcMessage(RpcMessage e) {
-  if (flatbuffers::IsOutRange(e, RpcMessage::NONE, RpcMessage::ForgetDeviceRequest)) return "";
+  if (flatbuffers::IsOutRange(e, RpcMessage::NONE, RpcMessage::SerialTrackerCommandRequest)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesRpcMessage()[index];
 }
@@ -1295,6 +1301,10 @@ template<> struct RpcMessageTraits<solarxr_protocol::rpc::AddUnknownDeviceReques
 
 template<> struct RpcMessageTraits<solarxr_protocol::rpc::ForgetDeviceRequest> {
   static const RpcMessage enum_value = RpcMessage::ForgetDeviceRequest;
+};
+
+template<> struct RpcMessageTraits<solarxr_protocol::rpc::SerialTrackerCommandRequest> {
+  static const RpcMessage enum_value = RpcMessage::SerialTrackerCommandRequest;
 };
 
 bool VerifyRpcMessage(flatbuffers::Verifier &verifier, const void *obj, RpcMessage type);
@@ -4327,6 +4337,9 @@ struct RpcMessageHeader FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const solarxr_protocol::rpc::ForgetDeviceRequest *message_as_ForgetDeviceRequest() const {
     return message_type() == solarxr_protocol::rpc::RpcMessage::ForgetDeviceRequest ? static_cast<const solarxr_protocol::rpc::ForgetDeviceRequest *>(message()) : nullptr;
   }
+  const solarxr_protocol::rpc::SerialTrackerCommandRequest *message_as_SerialTrackerCommandRequest() const {
+    return message_type() == solarxr_protocol::rpc::RpcMessage::SerialTrackerCommandRequest ? static_cast<const solarxr_protocol::rpc::SerialTrackerCommandRequest *>(message()) : nullptr;
+  }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<solarxr_protocol::datatypes::TransactionId>(verifier, VT_TX_ID, 4) &&
@@ -4563,6 +4576,10 @@ template<> inline const solarxr_protocol::rpc::AddUnknownDeviceRequest *RpcMessa
 
 template<> inline const solarxr_protocol::rpc::ForgetDeviceRequest *RpcMessageHeader::message_as<solarxr_protocol::rpc::ForgetDeviceRequest>() const {
   return message_as_ForgetDeviceRequest();
+}
+
+template<> inline const solarxr_protocol::rpc::SerialTrackerCommandRequest *RpcMessageHeader::message_as<solarxr_protocol::rpc::SerialTrackerCommandRequest>() const {
+  return message_as_SerialTrackerCommandRequest();
 }
 
 struct RpcMessageHeaderBuilder {
@@ -8966,6 +8983,58 @@ inline flatbuffers::Offset<ForgetDeviceRequest> CreateForgetDeviceRequestDirect(
       mac_address__);
 }
 
+/// Sends arbitrary command to the current tracker on the serial monitor
+struct SerialTrackerCommandRequest FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  typedef SerialTrackerCommandRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COMMAND = 4
+  };
+  const flatbuffers::String *command() const {
+    return GetPointer<const flatbuffers::String *>(VT_COMMAND);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_COMMAND) &&
+           verifier.VerifyString(command()) &&
+           verifier.EndTable();
+  }
+};
+
+struct SerialTrackerCommandRequestBuilder {
+  typedef SerialTrackerCommandRequest Table;
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_command(flatbuffers::Offset<flatbuffers::String> command) {
+    fbb_.AddOffset(SerialTrackerCommandRequest::VT_COMMAND, command);
+  }
+  explicit SerialTrackerCommandRequestBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  flatbuffers::Offset<SerialTrackerCommandRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<SerialTrackerCommandRequest>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<SerialTrackerCommandRequest> CreateSerialTrackerCommandRequest(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<flatbuffers::String> command = 0) {
+  SerialTrackerCommandRequestBuilder builder_(_fbb);
+  builder_.add_command(command);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<SerialTrackerCommandRequest> CreateSerialTrackerCommandRequestDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    const char *command = nullptr) {
+  auto command__ = command ? _fbb.CreateString(command) : 0;
+  return solarxr_protocol::rpc::CreateSerialTrackerCommandRequest(
+      _fbb,
+      command__);
+}
+
 }  // namespace rpc
 
 namespace pub_sub {
@@ -9917,6 +9986,10 @@ inline bool VerifyRpcMessage(flatbuffers::Verifier &verifier, const void *obj, R
     }
     case RpcMessage::ForgetDeviceRequest: {
       auto ptr = reinterpret_cast<const solarxr_protocol::rpc::ForgetDeviceRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case RpcMessage::SerialTrackerCommandRequest: {
+      auto ptr = reinterpret_cast<const solarxr_protocol::rpc::SerialTrackerCommandRequest *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return true;

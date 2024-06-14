@@ -296,6 +296,8 @@ pub mod solarxr_protocol {
     pub use self::add_unknown_device_request_generated::*;
     mod forget_device_request_generated;
     pub use self::forget_device_request_generated::*;
+    mod serial_tracker_command_request_generated;
+    pub use self::serial_tracker_command_request_generated::*;
   } // rpc
   mod message_bundle_generated;
   pub use self::message_bundle_generated::*;

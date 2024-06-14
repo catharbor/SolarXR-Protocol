@@ -69,6 +69,7 @@ union RpcMessage {
     UnknownDeviceHandshakeNotification,
     AddUnknownDeviceRequest,
     ForgetDeviceRequest,
+    SerialTrackerCommandRequest,
 }
 
 table RpcMessageHeader {
@@ -618,4 +619,9 @@ table AddUnknownDeviceRequest {
 
 table ForgetDeviceRequest {
     mac_address: string;
+}
+
+/// Sends arbitrary command to the current tracker on the serial monitor
+table SerialTrackerCommandRequest {
+    command: string;
 }

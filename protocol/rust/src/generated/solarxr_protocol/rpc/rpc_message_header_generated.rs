@@ -924,6 +924,21 @@ impl<'a> RpcMessageHeader<'a> {
     }
   }
 
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn message_as_serial_tracker_command_request(&self) -> Option<SerialTrackerCommandRequest<'a>> {
+    if self.message_type() == RpcMessage::SerialTrackerCommandRequest {
+      self.message().map(|t| {
+       // Safety:
+       // Created from a valid Table for this object
+       // Which contains a valid union in this slot
+       unsafe { SerialTrackerCommandRequest::init_from_table(t) }
+     })
+    } else {
+      None
+    }
+  }
+
 }
 
 impl flatbuffers::Verifiable for RpcMessageHeader<'_> {
@@ -993,6 +1008,7 @@ impl flatbuffers::Verifiable for RpcMessageHeader<'_> {
           RpcMessage::UnknownDeviceHandshakeNotification => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnknownDeviceHandshakeNotification>>("RpcMessage::UnknownDeviceHandshakeNotification", pos),
           RpcMessage::AddUnknownDeviceRequest => v.verify_union_variant::<flatbuffers::ForwardsUOffset<AddUnknownDeviceRequest>>("RpcMessage::AddUnknownDeviceRequest", pos),
           RpcMessage::ForgetDeviceRequest => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ForgetDeviceRequest>>("RpcMessage::ForgetDeviceRequest", pos),
+          RpcMessage::SerialTrackerCommandRequest => v.verify_union_variant::<flatbuffers::ForwardsUOffset<SerialTrackerCommandRequest>>("RpcMessage::SerialTrackerCommandRequest", pos),
           _ => Ok(()),
         }
      })?
@@ -1448,6 +1464,13 @@ impl core::fmt::Debug for RpcMessageHeader<'_> {
         },
         RpcMessage::ForgetDeviceRequest => {
           if let Some(x) = self.message_as_forget_device_request() {
+            ds.field("message", &x)
+          } else {
+            ds.field("message", &"InvalidFlatbuffer: Union discriminant does not match value.")
+          }
+        },
+        RpcMessage::SerialTrackerCommandRequest => {
+          if let Some(x) = self.message_as_serial_tracker_command_request() {
             ds.field("message", &x)
           } else {
             ds.field("message", &"InvalidFlatbuffer: Union discriminant does not match value.")
